@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>La Taberna del Búho Sabio</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+      min-height: 100vh;
+      color: #e8e8e8;
+      padding: 20px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    header {
+      text-align: center;
+      padding: 30px 20px;
+      background: linear-gradient(135deg, rgba(139,90,43,0.4), rgba(0,0,0,0.6));
+      border-radius: 15px;
+      margin-bottom: 25px;
+      border: 2px solid #d4a574;
+    }
+    h1 {
+      font-size: 2.5em;
+      background: linear-gradient(90deg, #f4d03f, #d4a574, #f4d03f);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+    }
+    .subtitle { color: #d4a574; font-size: 1.1em; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .tab-btn {
+      padding: 12px 24px;
+      border: 2px solid #5c4a3a;
+      border-radius: 8px;
+      background: rgba(92,74,58,0.3);
+      color: #d4a574;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+    .tab-btn.active { background: rgba(244,208,63,0.2); border-color: #f4d03f; color: #f4d03f; }
+    .main-content { display: flex; gap: 25px; flex-wrap: wrap; }
+    .products-section { flex: 2; min-width: 300px; }
+    .cart-section {
+      flex: 1; min-width: 280px;
+      background: linear-gradient(180deg, rgba(92,74,58,0.5), rgba(15,15,35,0.9));
+      border-radius: 15px; padding: 20px;
+      border: 2px solid #d4a574;
+      position: sticky; top: 20px; max-height: 80vh; overflow-y: auto;
+    }
+    .cart-title { font-size: 1.4em; color: #f4d03f; margin-bottom: 15px; }
+    .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+    .category-title {
+      grid-column: 1 / -1; font-size: 1.4em; color: #f4d03f;
+      padding: 15px 0 10px 0; border-bottom: 2px solid rgba(244,208,63,0.3); margin-bottom: 10px;
+    }
+    .product-card {
+      background: linear-gradient(135deg, rgba(92,74,58,0.4), rgba(15,15,35,0.6));
+      border-radius: 12px; padding: 20px; border: 2px solid #5c4a3a; transition: all 0.3s;
+    }
+    .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(244,208,63,0.15); border-color: #d4a574; }
+    .product-card.drink { border-left: 4px solid #e74c3c; }
+    .product-card.food { border-left: 4px solid #2ecc71; }
+    .product-card.special { border-left: 4px solid #9b59b6; }
+    .product-name { font-size: 1.1em; font-weight: 600; margin-bottom: 8px; color: #f0e6d3; }
+    .product-type {
+      display: inline-block; padding: 3px 10px; border-radius: 12px;
+      font-size: 0.75em; margin-bottom: 10px; font-weight: 600;
+    }
+    .drink .product-type { background: #e74c3c; color: #fff; }
+    .food .product-type { background: #2ecc71; color: #fff; }
+    .special .product-type { background: #9b59b6; color: #fff; }
+    .effect-box {
+      display: flex; gap: 10px; align-items: center; margin-bottom: 10px;
+      padding: 8px 12px; background: rgba(244,208,63,0.1);
+      border-radius: 8px; border-left: 3px solid #f4d03f;
+    }
+    .effect-icon { font-size: 1.3em; }
+    .effect-text { color: #f4d03f; font-size: 0.9em; font-weight: 500; }
+    .product-desc { color: #a89080; font-size: 0.85em; margin-bottom: 12px; font-style: italic; }
+    .product-footer { display: flex; justify-content: space-between; align-items: center; }
+    .product-price { font-size: 1.3em; font-weight: bold; color: #f4d03f; }
+    .add-btn {
+      padding: 8px 16px; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, #d4a574, #a67c52);
+      color: #fff; cursor: pointer; transition: all 0.3s; font-weight: 600;
+    }
+    .add-btn:hover { transform: scale(1.05); background: linear-gradient(135deg, #f4d03f, #d4a574); }
+    .cart-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px; background: rgba(92,74,58,0.3);
+      border-radius: 8px; margin-bottom: 10px; border: 1px solid #5c4a3a;
+    }
+    .cart-item-info { flex: 1; }
+    .cart-item-name { font-size: 0.95em; margin-bottom: 3px; color: #f0e6d3; }
+    .cart-item-price { color: #f4d03f; font-size: 0.85em; }
+    .cart-item-controls { display: flex; align-items: center; gap: 8px; }
+    .qty-btn {
+      width: 28px; height: 28px; border: none; border-radius: 6px;
+      background: #5c4a3a; color: #fff; cursor: pointer; font-size: 1.1em;
+    }
+    .qty-btn:hover { background: #d4a574; }
+    .cart-total { margin-top: 20px; padding-top: 15px; border-top: 2px solid #d4a574; }
+    .total-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .total-label { color: #a89080; }
+    .total-value { color: #f4d03f; font-weight: bold; }
+    .grand-total { font-size: 1.4em; margin-top: 10px; }
+    .checkout-btn {
+      width: 100%; padding: 15px; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, #f4d03f, #d4a574);
+      color: #1a1a2e; font-size: 1.1em; font-weight: bold; cursor: pointer; margin-top: 15px;
+    }
+    .checkout-btn:hover { box-shadow: 0 5px 20px rgba(244,208,63,0.4); }
+    .empty-cart { text-align: center; color: #a89080; padding: 30px; }
+    .info-section {
+      background: linear-gradient(135deg, rgba(92,74,58,0.3), rgba(15,15,35,0.6));
+      border-radius: 15px; padding: 25px; border: 2px solid #5c4a3a;
+    }
+    .info-title { font-size: 1.3em; color: #f4d03f; margin-bottom: 15px; }
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .info-card { background: rgba(92,74,58,0.3); padding: 18px; border-radius: 10px; border: 1px solid #5c4a3a; }
+    .info-card h4 { color: #f4d03f; margin-bottom: 10px; }
+    .info-card p { color: #d4a574; font-size: 0.9em; line-height: 1.6; }
+    .entry-options { display: flex; gap: 25px; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
+    .entry-card {
+      background: rgba(0,0,0,0.3); border-radius: 15px; padding: 25px;
+      flex: 1; min-width: 280px; max-width: 400px; text-align: center; border: 3px solid;
+    }
+    .entry-card.free { border-color: #2ecc71; }
+    .entry-card.vip { border-color: #f4d03f; background: rgba(244,208,63,0.05); }
+    .entry-icon { font-size: 3em; margin-bottom: 15px; }
+    .entry-card h4 { font-size: 1.4em; color: #f0e6d3; margin-bottom: 10px; }
+    .entry-card > p { color: #a89080; font-size: 0.9em; margin-bottom: 15px; }
+    .entry-price { font-size: 2em; font-weight: bold; margin: 15px 0; }
+    .free-price { color: #2ecc71; }
+    .vip-price { color: #f4d03f; }
+    .entry-features {
+      list-style: none; text-align: left; padding: 15px;
+      background: rgba(0,0,0,0.2); border-radius: 10px; margin-bottom: 15px;
+    }
+    .entry-features li { color: #d4a574; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.9em; }
+    .entry-features li:last-child { border-bottom: none; }
+    .npc-card {
+      display: flex; gap: 20px; align-items: flex-start;
+      background: rgba(244,208,63,0.05); border: 2px solid #5c4a3a;
+      border-radius: 12px; padding: 20px; margin-bottom: 20px;
+    }
+    .npc-avatar {
+      width: 80px; height: 80px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5em; flex-shrink: 0;
+    }
+    .npc-avatar.owner { background: linear-gradient(135deg, #f4d03f, #d4a574); }
+    .npc-avatar.bard { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+    .npc-avatar.barman { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+    .npc-avatar.chef { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+    .npc-info { flex: 1; }
+    .npc-name { font-size: 1.3em; color: #f4d03f; margin-bottom: 5px; }
+    .vip-only-badge {
+      display: inline-block; background: linear-gradient(135deg, #f4d03f, #d4a574);
+      color: #1a1a2e; font-size: 0.5em; padding: 4px 10px;
+      border-radius: 12px; margin-left: 10px; vertical-align: middle; font-weight: bold;
+    }
+    .npc-role { color: #d4a574; font-size: 0.9em; margin-bottom: 10px; }
+    .npc-desc { color: #a89080; font-size: 0.9em; line-height: 1.5; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: linear-gradient(135deg, #1a1a2e, #0f0f23);
+      padding: 30px; border-radius: 15px; max-width: 500px; width: 90%;
+      border: 2px solid #f4d03f; text-align: center;
+    }
+    .modal h2 { color: #f4d03f; margin-bottom: 20px; }
+    .modal p { color: #d4a574; margin-bottom: 20px; }
+    .modal-btn {
+      padding: 12px 30px; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, #f4d03f, #d4a574);
+      color: #1a1a2e; cursor: pointer; font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🦉 La Taberna del Búho Sabio</h1>
+      <p class="subtitle">Bebidas, comidas y buena compañía para el aventurero cansado</p>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('entrada')">🚪 Entrada</button>
+      <button class="tab-btn" onclick="showTab('bebidas')">🍺 Bebidas</button>
+      <button class="tab-btn" onclick="showTab('cocina')">👨‍🍳 Cocina de Skrix</button>
+      <button class="tab-btn" onclick="showTab('personajes')">🎭 Personajes</button>
+    </div>
+
+    <div id="entrada" class="tab-content active">
+      <div class="info-section">
+        <h3 class="info-title">🚪 Entrada a la Taberna</h3>
+        <div class="entry-options">
+          <div class="entry-card free">
+            <div class="entry-icon">🚪</div>
+            <h4>Entrada Normal</h4>
+            <p>Acceso a la taberna principal, barra y mesas comunes.</p>
+            <div class="entry-price free-price">GRATIS</div>
+            <ul class="entry-features">
+              <li>✓ Acceso a la barra de Pepe</li>
+              <li>✓ Mesas comunes</li>
+              <li>✓ Música de Glotis</li>
+              <li>✓ Menú completo de bebidas y comidas</li>
+            </ul>
+          </div>
+          <div class="entry-card vip">
+            <div class="entry-icon">⭐</div>
+            <h4>Entrada VIP</h4>
+            <p>Acceso exclusivo a la zona premium con beneficios especiales.</p>
+            <div class="entry-price vip-price">10 GP</div>
+            <ul class="entry-features">
+              <li>✓ Todo lo de entrada normal</li>
+              <li>⭐ Zona privada y tranquila</li>
+              <li>⭐ Servicio prioritario</li>
+              <li>⭐ Bebidas especiales exclusivas</li>
+              <li>⭐ Mesas de juego con Pepe</li>
+              <li>⭐ Canciones privadas de Glotis</li>
+              <li>⭐ Acceso exclusivo a Durnan</li>
+            </ul>
+            <button class="add-btn" style="padding:12px 30px;margin-top:10px;" onclick="addToCart(999)">+ Añadir Acceso VIP</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="bebidas" class="tab-content">
+      <div class="main-content">
+        <div class="products-section">
+          <div class="products-grid" id="drinks-grid"></div>
+        </div>
+        <div class="cart-section">
+          <div class="cart-title">🧾 Tu Cuenta</div>
+          <div id="cart-drinks"></div>
+          <div id="total-drinks"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="cocina" class="tab-content">
+      <div class="main-content">
+        <div class="products-section">
+          <div class="products-grid" id="kitchen-grid"></div>
+        </div>
+        <div class="cart-section">
+          <div class="cart-title">🧾 Tu Cuenta</div>
+          <div id="cart-kitchen"></div>
+          <div id="total-kitchen"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="personajes" class="tab-content">
+      <div class="info-section">
+        <h3 class="info-title">🎭 Conoce a Nuestro Personal</h3>
+        
+        <div class="npc-card">
+          <div class="npc-avatar owner">🏰</div>
+          <div class="npc-info">
+            <div class="npc-name">Durnan <span class="vip-only-badge">Solo VIP ⭐</span></div>
+            <div class="npc-role">👑 Dueño de la Taberna</div>
+            <div class="npc-desc">
+              <p>Un veterano aventurero retirado que ha visto más mazmorras que años tiene la mayoría de los presentes.</p>
+              <p style="margin-top:10px;"><strong style="color:#f4d03f;">Interacciones:</strong> Consejos, información sobre lugares peligrosos, y misiones secundarias.</p>
+              <p style="margin-top:10px;background:rgba(244,208,63,0.1);padding:10px;border-radius:8px;border-left:3px solid #f4d03f;"><strong style="color:#f4d03f;">⚠️ Ubicación:</strong> Solo en la <strong>Zona VIP</strong> (10 GP).</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="npc-card">
+          <div class="npc-avatar bard">🎸</div>
+          <div class="npc-info">
+            <div class="npc-name">Glotis</div>
+            <div class="npc-role">🎭 Bardo de la Casa</div>
+            <div class="npc-desc">
+              <p>El alma de la taberna. Anima cada noche con canciones e historias épicas.</p>
+              <p style="margin-top:10px;"><strong style="color:#f4d03f;">Interacciones:</strong> Pistas sobre misiones secretas a cambio de propinas.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="npc-card">
+          <div class="npc-avatar barman">🍺</div>
+          <div class="npc-info">
+            <div class="npc-name">Pepe</div>
+            <div class="npc-role">🍸 Camarero y Maestro de Juegos</div>
+            <div class="npc-desc">
+              <p>El camarero más carismático. Sirve bebidas y organiza juegos de azar.</p>
+              <p style="margin-top:10px;"><strong style="color:#f4d03f;">Desafíos:</strong> Tiradas de dados para premios o descuentos.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="npc-card">
+          <div class="npc-avatar chef">👨‍🍳</div>
+          <div class="npc-info">
+            <div class="npc-name">Skrix</div>
+            <div class="npc-role">🍳 Goblin Cocinero</div>
+            <div class="npc-desc">
+              <p>Un maestro culinario goblin que prepara los platos más deliciosos y mágicos.</p>
+              <p style="margin-top:10px;"><strong style="color:#f4d03f;">Especialidad:</strong> El famoso "Menú Misterioso del Día".</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <h2>🦉 ¡Pedido Listo!</h2>
+      <p id="modal-text">Pepe traerá tu pedido en un momento.</p>
+      <button class="modal-btn" onclick="closeModal()">¡Salud!</button>
+    </div>
+  </div>
+
+  <script>
+    var drinksServe = [
+      { id: 1, name: "Cerveza de Barril", price: 2, type: "drink", hasEffect: false, effect: null, desc: "La clásica cerveza de la casa, perfecta para relajarse." },
+      { id: 2, name: "Vino Tinto de la Casa", price: 3, type: "drink", hasEffect: false, effect: null, desc: "Un vino suave y elegante, ideal para buena conversación." },
+      { id: 3, name: "Licor de Frutos Oscuros", price: 4, type: "drink", hasEffect: false, effect: null, desc: "Licor espeso y cálido, perfecto para noches frías." },
+      { id: 4, name: "Sangría de Temporada", price: 5, type: "drink", hasEffect: false, effect: null, desc: "Mezcla refrescante de frutas y vino." }
+    ];
+
+    var drinksTakeaway = [
+      { id: 5, name: "Elixir de Resistencia", price: 8, type: "drink", hasEffect: true, effect: "+Resistencia tiradas físicas (1h)", desc: "Elixir revitalizante que devuelve fuerzas." },
+      { id: 6, name: "Cerveza del Guerrero", price: 10, type: "drink", hasEffect: true, effect: "+2 daño cuerpo a cuerpo (1h)", desc: "Cerveza con magia ancestral que fortalece." },
+      { id: 7, name: "Infusión de Energía", price: 7, type: "drink", hasEffect: true, effect: "+15% velocidad (30min)", desc: "Infusión ligera llena de energía." },
+      { id: 8, name: "Vino del Sabio", price: 12, type: "drink", hasEffect: true, effect: "+INT y +Percepción (1h)", desc: "Vino con hierbas que despiertan la mente." }
+    ];
+
+    var foodsServe = [
+      { id: 30, name: "Estofado de Pavo del Bosque", price: 10, type: "food", hasEffect: false, effect: null, desc: "Pavo jugoso con hierbas silvestres." },
+      { id: 31, name: "Sopa Mágica de Raíces", price: 12, type: "food", hasEffect: false, effect: null, desc: "Sopa que revitaliza cuerpo y alma." },
+      { id: 32, name: "Menú Misterioso del Día", price: 8, type: "food", hasEffect: true, effect: "???", desc: "Deja que Skrix decida. ¡Sorpresa!" },
+      { id: 33, name: "Comida de Aventurero", price: 12, type: "food", hasEffect: false, effect: null, desc: "Gran plato de carne con acompañamientos." },
+      { id: 34, name: "Pancakes con Miel", price: 5, type: "food", hasEffect: false, effect: null, desc: "Dulces y esponjosos con miel fresca." }
+    ];
+
+    var foodsTakeaway = [
+      { id: 20, name: "Sopa de Héroe", price: 10, type: "food", hasEffect: true, effect: "+10 HP máximo (1h)", desc: "Sopa con ingredientes frescos y hierbas curativas." },
+      { id: 21, name: "Pan de Regeneración", price: 6, type: "food", hasEffect: true, effect: "Regenera 2 HP/min (10min)", desc: "Pan mágico que acelera la curación." },
+      { id: 22, name: "Estofado del Guerrero", price: 15, type: "food", hasEffect: true, effect: "+FUE, +RES, Inmune venenos (1h)", desc: "Carnes y especias para fuerza y resistencia." },
+      { id: 23, name: "Ensalada de Hierbas Mágicas", price: 7, type: "food", hasEffect: true, effect: "+Habilidades mágicas (30min)", desc: "Hierbas que mejoran habilidades arcanas." },
+      { id: 24, name: "Bocadillos de Agilidad", price: 5, type: "food", hasEffect: true, effect: "+1 Agilidad y Destreza (1h)", desc: "Bocadillos llenos de energía." }
+    ];
+
+    var vipItem = { id: 999, name: "Acceso Zona VIP", price: 10, type: "vip", hasEffect: false, effect: null, desc: "Acceso VIP" };
+
+    var cart = [];
+
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); });
+      document.querySelectorAll('.tab-btn').forEach(function(el) { el.classList.remove('active'); });
+      document.getElementById(tabId).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    function renderCard(item) {
+      var cardClass = item.hasEffect ? 'special' : item.type;
+      var typeLabel = item.hasEffect ? 'Para Llevar ✨' : 'Para Servir';
+      var effectHtml = item.effect ? '<div class="effect-box"><span class="effect-icon">✨</span><span class="effect-text">' + item.effect + '</span></div>' : '';
+      
+      return '<div class="product-card ' + cardClass + '">' +
+        '<div class="product-name">' + item.name + '</div>' +
+        '<span class="product-type">' + typeLabel + '</span>' +
+        effectHtml +
+        '<div class="product-desc">"' + item.desc + '"</div>' +
+        '<div class="product-footer">' +
+        '<span class="product-price">' + item.price + ' GP</span>' +
+        '<button class="add-btn" onclick="addToCart(' + item.id + ')">+ Añadir</button>' +
+        '</div></div>';
+    }
+
+    function renderDrinks() {
+      var html = '<div class="category-title">🍺 Bebidas para Servir</div>';
+      for (var i = 0; i < drinksServe.length; i++) { html += renderCard(drinksServe[i]); }
+      html += '<div class="category-title">📦 Bebidas para Llevar (Con Efectos)</div>';
+      for (var i = 0; i < drinksTakeaway.length; i++) { html += renderCard(drinksTakeaway[i]); }
+      document.getElementById('drinks-grid').innerHTML = html;
+    }
+
+    function renderKitchen() {
+      var html = '<div class="category-title">🍖 Comidas para Servir</div>';
+      for (var i = 0; i < foodsServe.length; i++) { html += renderCard(foodsServe[i]); }
+      html += '<div class="category-title">📦 Comidas para Llevar (Con Efectos)</div>';
+      for (var i = 0; i < foodsTakeaway.length; i++) { html += renderCard(foodsTakeaway[i]); }
+      document.getElementById('kitchen-grid').innerHTML = html;
+    }
+
+    function getAllItems() {
+      return drinksServe.concat(drinksTakeaway).concat(foodsServe).concat(foodsTakeaway).concat([vipItem]);
+    }
+
+    function addToCart(id) {
+      var allItems = getAllItems();
+      var item = null;
+      for (var i = 0; i < allItems.length; i++) {
+        if (allItems[i].id === id) { item = allItems[i]; break; }
+      }
+      if (!item) return;
+      
+      var existing = null;
+      for (var i = 0; i < cart.length; i++) {
+        if (cart[i].id === id) { existing = cart[i]; break; }
+      }
+      
+      if (existing) { existing.qty++; }
+      else { cart.push({ id: item.id, name: item.name, price: item.price, qty: 1 }); }
+      renderCart();
+    }
+
+    function updateQty(id, delta) {
+      for (var i = 0; i < cart.length; i++) {
+        if (cart[i].id === id) {
+          cart[i].qty += delta;
+          if (cart[i].qty <= 0) { cart.splice(i, 1); }
+          break;
+        }
+      }
+      renderCart();
+    }
+
+    function renderCart() {
+      var cartHtml = '';
+      if (cart.length === 0) {
+        cartHtml = '<div class="empty-cart">🦉 ¿Qué te sirvo?</div>';
+      } else {
+        for (var i = 0; i < cart.length; i++) {
+          var item = cart[i];
+          cartHtml += '<div class="cart-item"><div class="cart-item-info">' +
+            '<div class="cart-item-name">' + item.name + '</div>' +
+            '<div class="cart-item-price">' + item.price + ' GP c/u</div></div>' +
+            '<div class="cart-item-controls">' +
+            '<button class="qty-btn" onclick="updateQty(' + item.id + ', -1)">−</button>' +
+            '<span>' + item.qty + '</span>' +
+            '<button class="qty-btn" onclick="updateQty(' + item.id + ', 1)">+</button>' +
+            '</div></div>';
+        }
+      }
+
+      var cartEls = [document.getElementById('cart-drinks'), document.getElementById('cart-kitchen')];
+      for (var i = 0; i < cartEls.length; i++) { if (cartEls[i]) cartEls[i].innerHTML = cartHtml; }
+
+      var totalHtml = '';
+      if (cart.length > 0) {
+        var total = 0;
+        for (var i = 0; i < cart.length; i++) { total += cart[i].price * cart[i].qty; }
+        totalHtml = '<div class="cart-total"><div class="total-row grand-total"><span class="total-label">Total:</span><span class="total-value">' + total + ' GP</span></div>' +
+          '<button class="checkout-btn" onclick="checkout()">🦉 Pagar Cuenta</button></div>';
+      }
+
+      var totalEls = [document.getElementById('total-drinks'), document.getElementById('total-kitchen')];
+      for (var i = 0; i < totalEls.length; i++) { if (totalEls[i]) totalEls[i].innerHTML = totalHtml; }
+    }
+
+    function checkout() {
+      var total = 0;
+      for (var i = 0; i < cart.length; i++) { total += cart[i].price * cart[i].qty; }
+      document.getElementById('modal-text').textContent = 'Total: ' + total + ' GP. ¡Pepe te agradece la visita!';
+      document.getElementById('modal').classList.add('active');
+      cart = [];
+      renderCart();
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+    }
+
+    // Initialize
+    renderDrinks();
+    renderKitchen();
+    renderCart();
+  </script>
+</body>
+</html>
