@@ -120,10 +120,6 @@
       border-radius: 15px; padding: 25px; border: 2px solid #5c4a3a;
     }
     .info-title { font-size: 1.3em; color: #f4d03f; margin-bottom: 15px; }
-    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-    .info-card { background: rgba(92,74,58,0.3); padding: 18px; border-radius: 10px; border: 1px solid #5c4a3a; }
-    .info-card h4 { color: #f4d03f; margin-bottom: 10px; }
-    .info-card p { color: #d4a574; font-size: 0.9em; line-height: 1.6; }
     .entry-options { display: flex; gap: 25px; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
     .entry-card {
       background: rgba(0,0,0,0.3); border-radius: 15px; padding: 25px;
@@ -143,6 +139,15 @@
     }
     .entry-features li { color: #d4a574; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.9em; }
     .entry-features li:last-child { border-bottom: none; }
+    .entry-btn {
+      padding: 14px 35px; border: none; border-radius: 8px;
+      color: #fff; cursor: pointer; font-weight: 700; font-size: 1.1em;
+      transition: all 0.3s; margin-top: 10px;
+    }
+    .entry-btn.free-btn { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+    .entry-btn.free-btn:hover { box-shadow: 0 5px 20px rgba(46,204,113,0.4); transform: scale(1.05); }
+    .entry-btn.vip-btn { background: linear-gradient(135deg, #f4d03f, #d4a574); color: #1a1a2e; }
+    .entry-btn.vip-btn:hover { box-shadow: 0 5px 20px rgba(244,208,63,0.4); transform: scale(1.05); }
     .npc-card {
       display: flex; gap: 20px; align-items: flex-start;
       background: rgba(244,208,63,0.05); border: 2px solid #5c4a3a;
@@ -195,10 +200,10 @@
     </header>
 
     <div class="tabs">
-      <button class="tab-btn active" onclick="showTab('entrada')">🚪 Entrada</button>
-      <button class="tab-btn" onclick="showTab('bebidas')">🍺 Bebidas</button>
-      <button class="tab-btn" onclick="showTab('cocina')">👨‍🍳 Cocina de Skrix</button>
-      <button class="tab-btn" onclick="showTab('personajes')">🎭 Personajes</button>
+      <button class="tab-btn active" data-tab="entrada">🚪 Entrada</button>
+      <button class="tab-btn" data-tab="bebidas">🍺 Bebidas</button>
+      <button class="tab-btn" data-tab="cocina">👨‍🍳 Cocina de Skrix</button>
+      <button class="tab-btn" data-tab="personajes">🎭 Personajes</button>
     </div>
 
     <div id="entrada" class="tab-content active">
@@ -216,6 +221,7 @@
               <li>✓ Música de Glotis</li>
               <li>✓ Menú completo de bebidas y comidas</li>
             </ul>
+            <button class="entry-btn free-btn" id="enter-free">🚪 Entrar a la Taberna</button>
           </div>
           <div class="entry-card vip">
             <div class="entry-icon">⭐</div>
@@ -231,7 +237,7 @@
               <li>⭐ Canciones privadas de Glotis</li>
               <li>⭐ Acceso exclusivo a Durnan</li>
             </ul>
-            <button class="add-btn" style="padding:12px 30px;margin-top:10px;" onclick="addToCart(999)">+ Añadir Acceso VIP</button>
+            <button class="entry-btn vip-btn" id="enter-vip">⭐ Entrar como VIP</button>
           </div>
         </div>
       </div>
@@ -323,7 +329,7 @@
     <div class="modal-content">
       <h2>🦉 ¡Pedido Listo!</h2>
       <p id="modal-text">Pepe traerá tu pedido en un momento.</p>
-      <button class="modal-btn" onclick="closeModal()">¡Salud!</button>
+      <button class="modal-btn" id="modal-close">¡Salud!</button>
     </div>
   </div>
 
@@ -358,7 +364,10 @@
       { id: 24, name: "Bocadillos de Agilidad", price: 5, type: "food", hasEffect: true, effect: "+1 Agilidad y Destreza (1h)", desc: "Bocadillos llenos de energía." }
     ];
 
-    var vipItem = { id: 999, name: "Acceso Zona VIP", price: 10, type: "vip", hasEffect: false, effect: null, desc: "Acceso VIP" };
+    var entryItems = {
+      free: { id: 998, name: "Entrada Normal", price: 0, type: "entry" },
+      vip: { id: 999, name: "Acceso Zona VIP ⭐", price: 10, type: "entry" }
+    };
 
     var cart = [];
 
@@ -366,7 +375,7 @@
       document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); });
       document.querySelectorAll('.tab-btn').forEach(function(el) { el.classList.remove('active'); });
       document.getElementById(tabId).classList.add('active');
-      event.target.classList.add('active');
+      document.querySelector('[data-tab="' + tabId + '"]').classList.add('active');
     }
 
     function renderCard(item) {
@@ -381,7 +390,7 @@
         '<div class="product-desc">"' + item.desc + '"</div>' +
         '<div class="product-footer">' +
         '<span class="product-price">' + item.price + ' GP</span>' +
-        '<button class="add-btn" onclick="addToCart(' + item.id + ')">+ Añadir</button>' +
+        '<button class="add-btn" data-id="' + item.id + '">+ Añadir</button>' +
         '</div></div>';
     }
 
@@ -402,7 +411,7 @@
     }
 
     function getAllItems() {
-      return drinksServe.concat(drinksTakeaway).concat(foodsServe).concat(foodsTakeaway).concat([vipItem]);
+      return drinksServe.concat(drinksTakeaway).concat(foodsServe).concat(foodsTakeaway).concat([entryItems.free, entryItems.vip]);
     }
 
     function addToCart(id) {
@@ -413,19 +422,32 @@
       }
       if (!item) return;
       
-      var existing = null;
-      for (var i = 0; i < cart.length; i++) {
-        if (cart[i].id === id) { existing = cart[i]; break; }
+      // Entry items can only be added once
+      if (item.type === 'entry') {
+        // Remove any existing entry
+        for (var i = cart.length - 1; i >= 0; i--) {
+          if (cart[i].type === 'entry') { cart.splice(i, 1); }
+        }
+        cart.unshift({ id: item.id, name: item.name, price: item.price, qty: 1, type: 'entry' });
+      } else {
+        var existing = null;
+        for (var i = 0; i < cart.length; i++) {
+          if (cart[i].id === id) { existing = cart[i]; break; }
+        }
+        if (existing) { existing.qty++; }
+        else { cart.push({ id: item.id, name: item.name, price: item.price, qty: 1 }); }
       }
-      
-      if (existing) { existing.qty++; }
-      else { cart.push({ id: item.id, name: item.name, price: item.price, qty: 1 }); }
       renderCart();
     }
 
     function updateQty(id, delta) {
       for (var i = 0; i < cart.length; i++) {
         if (cart[i].id === id) {
+          // Don't allow changing entry quantity
+          if (cart[i].type === 'entry') {
+            if (delta < 0) cart.splice(i, 1);
+            break;
+          }
           cart[i].qty += delta;
           if (cart[i].qty <= 0) { cart.splice(i, 1); }
           break;
@@ -441,13 +463,15 @@
       } else {
         for (var i = 0; i < cart.length; i++) {
           var item = cart[i];
-          cartHtml += '<div class="cart-item"><div class="cart-item-info">' +
+          var isEntry = item.type === 'entry';
+          cartHtml += '<div class="cart-item"' + (isEntry ? ' style="background:rgba(244,208,63,0.15);border-color:#f4d03f;"' : '') + '><div class="cart-item-info">' +
             '<div class="cart-item-name">' + item.name + '</div>' +
-            '<div class="cart-item-price">' + item.price + ' GP c/u</div></div>' +
+            '<div class="cart-item-price">' + (item.price === 0 ? 'GRATIS' : item.price + ' GP') + '</div></div>' +
             '<div class="cart-item-controls">' +
+            (isEntry ? '<button class="qty-btn" onclick="updateQty(' + item.id + ', -1)">✕</button>' :
             '<button class="qty-btn" onclick="updateQty(' + item.id + ', -1)">−</button>' +
             '<span>' + item.qty + '</span>' +
-            '<button class="qty-btn" onclick="updateQty(' + item.id + ', 1)">+</button>' +
+            '<button class="qty-btn" onclick="updateQty(' + item.id + ', 1)">+</button>') +
             '</div></div>';
         }
       }
@@ -460,11 +484,17 @@
         var total = 0;
         for (var i = 0; i < cart.length; i++) { total += cart[i].price * cart[i].qty; }
         totalHtml = '<div class="cart-total"><div class="total-row grand-total"><span class="total-label">Total:</span><span class="total-value">' + total + ' GP</span></div>' +
-          '<button class="checkout-btn" onclick="checkout()">🦉 Pagar Cuenta</button></div>';
+          '<button class="checkout-btn" id="checkout-btn">🦉 Pagar Cuenta</button></div>';
       }
 
       var totalEls = [document.getElementById('total-drinks'), document.getElementById('total-kitchen')];
       for (var i = 0; i < totalEls.length; i++) { if (totalEls[i]) totalEls[i].innerHTML = totalHtml; }
+      
+      // Rebind checkout
+      var checkoutBtns = document.querySelectorAll('#checkout-btn');
+      checkoutBtns.forEach(function(btn) {
+        btn.onclick = checkout;
+      });
     }
 
     function checkout() {
@@ -479,6 +509,27 @@
     function closeModal() {
       document.getElementById('modal').classList.remove('active');
     }
+
+    function enterTavern(type) {
+      addToCart(entryItems[type].id);
+      showTab('bebidas');
+    }
+
+    // Event listeners
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+      btn.onclick = function() { showTab(btn.dataset.tab); };
+    });
+
+    document.getElementById('enter-free').onclick = function() { enterTavern('free'); };
+    document.getElementById('enter-vip').onclick = function() { enterTavern('vip'); };
+    document.getElementById('modal-close').onclick = closeModal;
+
+    // Delegate add buttons
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('add-btn') && e.target.dataset.id) {
+        addToCart(parseInt(e.target.dataset.id));
+      }
+    });
 
     // Initialize
     renderDrinks();
